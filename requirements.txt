@@ -1,0 +1,5 @@
+aiogram==2.20
+loguru==0.6.0
+odmantic==0.4.0
+aioredis==2.0.1
+humanize==4.0.0
