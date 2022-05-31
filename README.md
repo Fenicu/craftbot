@@ -16,7 +16,8 @@ sudo apt install -y docker-ce
 
 sudo usermod -aG docker ${USER}
 
-su - ${USER}```
+su - ${USER}
+```
 
 ## Установка docker compose
 ```bash
@@ -30,7 +31,8 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose```
 ```bash
 docker build --pull --rm -f "Dockerfile" -t craftbot:latest "."
 
-docker-compose -f "docker-compose.yml" up -d --build```
+docker-compose -f "docker-compose.yml" up -d --build
+```
 
 
 # Установка для разработки
@@ -39,7 +41,8 @@ docker-compose -f "docker-compose.yml" up -d --build```
 ```bash
 docker run -p127.0.0.1:27017:27017 --restart=always --name mongo-server -d mongo:4.2
 
-docker run -p127.0.0.1:6379:6379 --restart=always --name redis-server -d redis:latest```
+docker run -p127.0.0.1:6379:6379 --restart=always --name redis-server -d redis:latest
+```
 
 ## Установка python
 ```bash
@@ -49,7 +52,8 @@ sudo add-apt-repository ppa:deadsnakes/ppa
 
 sudo apt update
 
-sudo apt install python3.9```
+sudo apt install python3.9
+```
 
 ## Установка зависимостей
 ```bash
@@ -59,7 +63,8 @@ python3.9 -m venv env
 
 source ./env/bin/activate
 
-pip install -r requirements.txt```
+pip install -r requirements.txt
+```
 
 Добавить в .bashrc
 
@@ -80,4 +85,5 @@ alias envfile='__envfile'
 ```bash
 cd ./src
 
-python main.py```
+python main.py
+```
