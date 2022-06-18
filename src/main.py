@@ -39,7 +39,7 @@ async def any_callback(call: types.CallbackQuery):
 
 async def on_startup(app: Application):
     logger.info("Получаю информацию о боте...")
-    botinfo = await dp.bot.me
+    botinfo = await bot.me
     if not cfg.is_polling:
         logger.warning("Устанавливаю вебхук {}", cfg.webhook_url)
         await bot.set_webhook(
@@ -48,6 +48,13 @@ async def on_startup(app: Application):
             drop_pending_updates=True,
             max_connections=cfg.wh_max_connections,
         )
+    scope = types.BotCommandScopeAllPrivateChats()
+    commands = [
+        types.BotCommand(command="start", description="Начать работу с ботом"),
+        types.BotCommand(command="help", description="Начать работу с ботом"),
+        types.BotCommand(command="clear", description="Очистить инвентарь"),
+    ]
+    await bot.set_my_commands(commands=commands, scope=scope)
     logger.warning("Бот {} [@{}] запущен", botinfo.full_name, botinfo.username)
 
 

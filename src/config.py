@@ -102,11 +102,9 @@ class Settings(BaseSettings):
             pool_size=100,
         )
 
+
 # Any bot settings
 
-allowed_updates = (
-    types.AllowedUpdates.MESSAGE
-    | types.AllowedUpdates.CALLBACK_QUERY
-)
+allowed_updates = types.AllowedUpdates.MESSAGE | types.AllowedUpdates.CALLBACK_QUERY
 
 cfg = Settings()

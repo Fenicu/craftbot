@@ -83,7 +83,9 @@ class CraftType:
                     break
             else:
                 item = CraftItemModel(
-                    item_id=str(item_in_blueprint.item_id), needed=item_in_blueprint.count, available=0
+                    item_id=str(item_in_blueprint.item_id),
+                    needed=item_in_blueprint.count,
+                    available=0,
                 )
                 self.not_completed_list.append(item)
 
@@ -116,22 +118,28 @@ class CraftType:
         try:
             self.user = UserType.parse_raw(craft["owner"])
             self.blueprints = [
-                BlueprintType(**bp) for bp in [json.loads(bp_) for bp_ in craft["blueprints"]]
+                BlueprintType(**bp)
+                for bp in [json.loads(bp_) for bp_ in craft["blueprints"]]
             ]
             self.completed_list = [
-                CraftItemModel(**bp) for bp in [json.loads(bp_) for bp_ in craft["completed_list"]]
+                CraftItemModel(**bp)
+                for bp in [json.loads(bp_) for bp_ in craft["completed_list"]]
             ]
             self.needed_items = [
-                EmbeddedItemType(**bp) for bp in [json.loads(bp_) for bp_ in craft["needed_items"]]
+                EmbeddedItemType(**bp)
+                for bp in [json.loads(bp_) for bp_ in craft["needed_items"]]
             ]
             self.not_completed_list = [
-                CraftItemModel(**bp) for bp in [json.loads(bp_) for bp_ in craft["not_completed_list"]]
+                CraftItemModel(**bp)
+                for bp in [json.loads(bp_) for bp_ in craft["not_completed_list"]]
             ]
         except Exception:
             logger.exception("Ошибочка")
             raise ValueError
 
-    async def filter_keyboard(self, mongo: AIOEngine, craft_id: str) -> types.InlineKeyboardMarkup:
+    async def filter_keyboard(
+        self, mongo: AIOEngine, craft_id: str
+    ) -> types.InlineKeyboardMarkup:
         """
         Получить клавиатуру с фильтрами
         """
@@ -139,13 +147,16 @@ class CraftType:
         url = f"https://t.me/share/url?url=/share {craft_id}"
         buttons = [
             types.InlineKeyboardButton(
-                text=COMPLETED, callback_data=f"craft:{craft_id}:{CraftFilters.COMPLITED}"
+                text=COMPLETED,
+                callback_data=f"craft:{craft_id}:{CraftFilters.COMPLITED}",
             ),
             types.InlineKeyboardButton(
-                text=NOT_COMPLETED, callback_data=f"craft:{craft_id}:{CraftFilters.NOTCOMPLITED}"
+                text=NOT_COMPLETED,
+                callback_data=f"craft:{craft_id}:{CraftFilters.NOTCOMPLITED}",
             ),
             types.InlineKeyboardButton(
-                text="Без фильтра", callback_data=f"craft:{craft_id}:{CraftFilters.NOFILTER}"
+                text="Без фильтра",
+                callback_data=f"craft:{craft_id}:{CraftFilters.NOFILTER}",
             ),
             types.InlineKeyboardButton(
                 text="Импорт", callback_data=f"craft:{craft_id}:{CraftFilters.RAW}"
@@ -156,7 +167,9 @@ class CraftType:
             types.InlineKeyboardButton(text="Поделиться", url=url),
         ]
         if len(self.blueprints) == 1:
-            tier = await mongo.find_one(TierType, TierType.id == self.blueprints[0].tier)
+            tier = await mongo.find_one(
+                TierType, TierType.id == self.blueprints[0].tier
+            )
             buttons.append(
                 types.InlineKeyboardButton(
                     text="◀️Назад", callback_data=f"showtier:{tier.tier_id}"
@@ -173,7 +186,7 @@ class CraftType:
         completed_list: bool = True,
         not_completed_list: bool = True,
         raw: bool = False,
-        recipe = False,
+        recipe=False,
     ) -> Tuple[str, types.InlineKeyboardMarkup]:
         if user and self.user.telegram_id != user.telegram_id:
             out = f"Владелец крафта: {self.user.name}\n"
@@ -184,17 +197,21 @@ class CraftType:
                 out += f"{md.hbold(bp.name)}\n"
             out += "\n"
             for item_ in self.not_completed_list:
-                item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
+                item = await mongo.find_one(
+                    ItemType, ItemType.id == ObjectId(item_.item_id)
+                )
                 out += f"{item.name} {item_.needed - item_.available} {md.hcode(f'/buy_{item.item_id}')}\n"
             return out, await self.filter_keyboard(mongo, craft_id)
-        
+
         elif recipe:
             for bp in self.blueprints:
                 out += f"{md.hbold(bp.name)}\n"
 
             out += "\n"
             for item_ in self.needed_items:
-                item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
+                item = await mongo.find_one(
+                    ItemType, ItemType.id == ObjectId(item_.item_id)
+                )
                 out += f"{item.name}: {item_.count}\n"
             return out, await self.filter_keyboard(mongo, craft_id)
 
@@ -205,7 +222,9 @@ class CraftType:
 
             if completed_list:
                 for item_ in self.completed_list:
-                    item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
+                    item = await mongo.find_one(
+                        ItemType, ItemType.id == ObjectId(item_.item_id)
+                    )
                     if item_.available > item_.needed:
                         out += f"{COMPLETED}{item.name} {item_.available}/{item_.needed} ({item_.available - item_.needed}{ITEM})\n"
                     else:
@@ -214,7 +233,9 @@ class CraftType:
 
             if not_completed_list:
                 for item_ in self.not_completed_list:
-                    item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
+                    item = await mongo.find_one(
+                        ItemType, ItemType.id == ObjectId(item_.item_id)
+                    )
                     out += f"{NOT_COMPLETED}{item.name} {item_.available}/{item_.needed}{ITEM} ({item_.needed - item_.available}{ITEM})\n"
                 out += "\n"
 

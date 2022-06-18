@@ -55,7 +55,10 @@ class WorkShopModel(Model):
 
     async def get_all_tiers(self, mongo: AIOEngine) -> List[int]:
         blueprints = await mongo.find(
-            BlueprintType, BlueprintType.id.in_([bp.blueprint_id for bp in self.blueprints])
+            BlueprintType,
+            BlueprintType.id.in_([bp.blueprint_id for bp in self.blueprints]),
         )
-        tiers_ = await mongo.find(TierType, TierType.id.in_([bp.tier for bp in blueprints]))
+        tiers_ = await mongo.find(
+            TierType, TierType.id.in_([bp.tier for bp in blueprints])
+        )
         return [tier.tier_id for tier in tiers_]

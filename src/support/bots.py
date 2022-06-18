@@ -5,7 +5,10 @@ from config import cfg
 from support.i18n import I18nMiddleware
 
 bot = Bot(
-    token=cfg.telegram_token, validate_token=True, parse_mode="HTML", server=cfg.bot_api_server
+    token=cfg.telegram_token,
+    validate_token=True,
+    parse_mode="HTML",
+    server=cfg.bot_api_server,
 )
 dp = Dispatcher(
     bot, storage=cfg.fsm_storage

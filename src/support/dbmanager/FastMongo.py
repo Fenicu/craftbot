@@ -68,7 +68,9 @@ class FastOdmanticMongo(FastMongo):
 
     def get_engine(self) -> AIOEngine:
         if not self._engine:
-            self._engine = AIOEngine(motor_client=self.get_client(), database=cfg.mongo_db)
+            self._engine = AIOEngine(
+                motor_client=self.get_client(), database=cfg.mongo_db
+            )
         return self._engine
 
 

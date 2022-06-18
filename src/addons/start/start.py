@@ -7,6 +7,7 @@ from odmantic.engine import AIOEngine
 
 from support.bots import dp
 from support.models import UserType
+from support.models.bag_model import BagType
 from support.models.items_model import EmbeddedItemType, ItemType
 
 
@@ -23,6 +24,19 @@ async def starting(message: types.Message, user: UserType, mongo: AIOEngine):
     user.fsm = ""
     user.fsm_addons = ""
     await mongo.save(user)
+
+
+@dp.message_handler(commands=["clear"])
+async def starting(message: types.Message, user: UserType, mongo: AIOEngine):
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+    buttons = ["⚒Крафт", "🗜Масс крафт", "🔨Мастерские"]
+    if user.admin:
+        buttons.append("🖥 Админ Панель")
+    kb.add(*buttons)
+    user.bag = BagType()
+    await mongo.save(user)
+    out = "Инвентарь был очищен"
+    await message.answer(out, reply_markup=kb)
 
 
 @dp.message_handler(regexp="Сделать заказ /myorders")

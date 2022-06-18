@@ -8,11 +8,8 @@ from odmantic import AIOEngine
 from support.bots import dp
 from support.models.blueprint_model import BlueprintType, TierType
 from support.models.user_model import UserType
-from support.models.workshop_model import (
-    WORKSHOPTYPE_MAPPING,
-    WorkShopBlueprint,
-    WorkShopModel,
-)
+from support.models.workshop_model import (WORKSHOPTYPE_MAPPING,
+                                           WorkShopBlueprint, WorkShopModel)
 
 
 @dp.message_handler(text="🔨Мастерские")
@@ -55,7 +52,8 @@ async def create_workshop(message: types.Message, mongo: AIOEngine):
         if not tier:
             continue
         blueprint = await mongo.find_one(
-            BlueprintType, (BlueprintType.slot == item[1]) & (BlueprintType.tier == tier.id)
+            BlueprintType,
+            (BlueprintType.slot == item[1]) & (BlueprintType.tier == tier.id),
         )
         if not blueprint:
             continue
@@ -72,7 +70,9 @@ async def create_workshop(message: types.Message, mongo: AIOEngine):
 
         blueprints.append(WorkShopBlueprint(blueprint_id=blueprint.id, level=level))
 
-    ws = await mongo.find_one(WorkShopModel, WorkShopModel.owner == message.from_user.id)
+    ws = await mongo.find_one(
+        WorkShopModel, WorkShopModel.owner == message.from_user.id
+    )
     print(blueprints)
     if not ws:
         ws = WorkShopModel(

@@ -180,7 +180,9 @@ class AdminFilter(Filter):
             else:
                 obj._conf[self.validkey] = False
                 return obj.conf[self.validkey]
-            if message.chat.type == types.ChatType.PRIVATE:  # there is no admin in private chats
+            if (
+                message.chat.type == types.ChatType.PRIVATE
+            ):  # there is no admin in private chats
                 obj._conf[self.validkey] = False
                 return obj.conf[self.validkey]
             chat_ids = [message.chat.id]
@@ -248,7 +250,9 @@ dp.filters_factory.bind(
 dp.filters_factory.bind(
     RegexpFsmFilter, event_handlers=[dp.message_handlers, dp.callback_query_handlers]
 )
-dp.filters_factory.bind(JsonCallbackDataFilter, event_handlers=[dp.callback_query_handlers])
+dp.filters_factory.bind(
+    JsonCallbackDataFilter, event_handlers=[dp.callback_query_handlers]
+)
 dp.filters_factory.bind(
     IsGroupJoin, event_handlers=[dp.my_chat_member_handlers, dp.chat_member_handlers]
 )

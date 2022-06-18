@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Tuple
 
-from aiogram.contrib.middlewares.i18n import I18nMiddleware as BaseI18nMiddleware
+from aiogram.contrib.middlewares.i18n import \
+    I18nMiddleware as BaseI18nMiddleware
 
 
 @dataclass
