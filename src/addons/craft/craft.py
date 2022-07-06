@@ -1,38 +1,66 @@
 import re
 from datetime import datetime, timedelta
+from random import randint, random, shuffle
 from typing import List
 
-from aiogram import types
+from aiogram import md, types
 from aioredis import Redis
 from odmantic import AIOEngine
 from odmantic.bson import ObjectId
-
 from support.bots import dp
 from support.models import UserType
-from support.models.blueprint_model import (ICON_MAPPING, BlueprintType,
-                                            TierType)
+from support.models.blueprint_model import ICON_MAPPING, BlueprintType, TierType
 from support.models.craft_model import CraftFilters, CraftType
 
 
 @dp.message_handler(text="🗜Масс крафт")
-async def mass_craft_info(message: types.Message):
-    # TODO добавить генерацию случайных команд для разнообразия
-    out = """Команда для массового крафта используется так:
-<code>/craft t11 chest head t13 legs t12 left right</code>
-<code>/craft t16 chest head legs left right</code>
-<code>/craft t14 head head head head head</code>
-<code>/craft t17 all</code>
-После команды craft указывается сначала тир, потом предметы из него, чтобы добавить весь тир, напишите all
-Справка по вещам:
-📱 - right
-⌚️ - left
-🕶 - head
-👞 - legs
-👕 - chest
-👔 - torso
-💻 - book
-💍 - ring
-    """
+async def mass_craft_info(message: types.Message, mongo: AIOEngine):
+    tiers = await mongo.find(TierType)
+    shuffle(tiers)
+    tier_texts = []
+    for tier in tiers:
+        tier_text = f"t{tier.tier_id} "
+        blueprints = await mongo.find(BlueprintType, BlueprintType.tier == tier.id)
+        if not blueprints:
+            continue
+
+        blueprints = blueprints[: randint(1, len(blueprints))]
+        shuffle(blueprints)
+
+        if random() <= 0.15:
+            tier_text += "all"
+            tier_texts.append(tier_text)
+            continue
+
+        for bp in blueprints:
+            tier_text += f"{bp.slot} "
+            if random() <= 0.25:
+                tier_text += f"{bp.slot} "
+
+        tier_texts.append(tier_text[:-1])
+
+    commands = []
+    for i in range(randint(2, 3)):
+        shuffle(tier_texts)
+        max_size = randint(1, len(tier_texts))
+        max_size = 3 if max_size > 3 else max_size
+        tiers_to_command = tier_texts[:max_size]
+        commands.append(md.hcode("/craft " + " ".join(tiers_to_command)))
+
+    out = "Команда для массового крафта используется так:\n"
+    out += "\n\n".join(commands) + "\n\n"
+    out += (
+        "После команды craft указывается сначала тир, потом предметы из него, чтобы добавить весь тир, напишите all\n"
+        "Справка по вещам:\n"
+        "📱 - <code>right</code>\n"
+        "⌚️ - <code>left</code>\n"
+        "🕶 - <code>head</code>\n"
+        "👞 - <code>legs</code>\n"
+        "👕 - <code>chest</code>\n"
+        "👔 - <code>torso</code>\n"
+        "💻 - <code>book</code>\n"
+        "💍 - <code>ring</code>\n"
+    )
     await message.answer(out)
 
 
