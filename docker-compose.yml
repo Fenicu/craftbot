@@ -2,8 +2,8 @@ version: "3.7"
 
 services:
   craftbot:
-    image: craftbot:latest
-    container_name: "craftbot-telegrambot"
+    build: .
+    container_name: "craftbot"
     environment:
       telegram_token: "12345:abcd"
       telegram_admins: '["267519921", "1234567", "666555444"]'
@@ -30,3 +30,7 @@ services:
     restart: always
     volumes:
         - redis:/data
+
+volumes:
+  mongo:
+  redis:
