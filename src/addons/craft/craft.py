@@ -7,9 +7,11 @@ from aiogram import md, types
 from aioredis import Redis
 from odmantic import AIOEngine
 from odmantic.bson import ObjectId
+
 from support.bots import dp
 from support.models import UserType
-from support.models.blueprint_model import ICON_MAPPING, BlueprintType, TierType
+from support.models.blueprint_model import (ICON_MAPPING, BlueprintType,
+                                            TierType)
 from support.models.craft_model import CraftFilters, CraftType
 
 

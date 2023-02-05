@@ -5,6 +5,7 @@ services:
     build: .
     container_name: "craftbot"
     environment:
+      TZ: Europe/Moscow
       telegram_token: "12345:abcd"
       telegram_admins: '["267519921", "1234567", "666555444"]'
       webhook_url: https://someurl.com/swcraftbot/updates

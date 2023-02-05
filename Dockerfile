@@ -16,12 +16,7 @@ FROM python:3.9-slim-buster
 COPY --from=compile-image /opt/venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
-ENV TZ=Europe/Moscow
 
-RUN apt-get install -yy tzdata
-RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-WORKDIR /app
 COPY src /app/src
 WORKDIR /app/src
 CMD ["python", "main.py"]

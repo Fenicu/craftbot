@@ -91,7 +91,6 @@ class JsonCallbackDataFilter(BoundFilter):
             return False
         if self.type == dict:
             for key, value in self.json.items():
-
                 if isinstance(value, type):
                     if isinstance(calldata[key], value):
                         return {"jsondata": calldata}

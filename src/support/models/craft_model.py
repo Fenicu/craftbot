@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 from enum import Enum
+from math import ceil
 from typing import List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -238,6 +239,14 @@ class CraftType:
                     )
                     out += f"{NOT_COMPLETED}{item.name} {item_.available}/{item_.needed}{ITEM} ({item_.needed - item_.available}{ITEM})\n"
                 out += "\n"
+
+            craft_evaluation = 0
+            for item_ in self.needed_items:
+                item = await mongo.find_one(
+                    ItemType, ItemType.id == ObjectId(item_.item_id)
+                )
+                craft_evaluation += item_.count * item.evaluation
+            out += f"Оценка крафта: {ceil(craft_evaluation)}🦄\n"
 
             summary = sum([item.count for item in self.needed_items])
             out += f"Предметов: {summary}{ITEM}\n"

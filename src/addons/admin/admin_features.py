@@ -10,9 +10,9 @@ from support.models.items_model import EmbeddedItemType, ItemType
 
 @dp.message_handler(text="Все ресурсы", global_admin=True)
 async def get_all_items(message: types.Message, mongo: AIOEngine):
-    users = await mongo.find(UserType, UserType.bag.items != [])
+    users = mongo.find(UserType, UserType.bag.items != [])
     all_items: List[EmbeddedItemType] = []
-    for user in users:
+    async for user in users:
         for item in user.bag.items:
             for item_ in all_items:
                 if item_.item_id == item.item_id:

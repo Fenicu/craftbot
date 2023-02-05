@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from math import ceil
 from typing import List
 
 from aiogram import types
@@ -42,6 +43,7 @@ async def starting(message: types.Message, user: UserType, mongo: AIOEngine):
 @dp.message_handler(regexp="Сделать заказ /myorders")
 async def update_bag(message: types.Message, user: UserType, mongo: AIOEngine):
     items: List[EmbeddedItemType] = []
+    bag_evaluation = 0
     for line in message.text.splitlines():
         if "Твои ресурсы" in line or "Сделать заказ" in line:
             continue
@@ -52,14 +54,21 @@ async def update_bag(message: types.Message, user: UserType, mongo: AIOEngine):
             if item := await mongo.find_one(
                 ItemType, ItemType.name == item_info.group("item_name")
             ):
-                items.append(item.short(int(item_info.group("item_count"))))
+                count = int(item_info.group("item_count"))
+                bag_evaluation += count * item.evaluation
+                items.append(item.short(count=count))
         else:
             if item := await mongo.find_one(ItemType, ItemType.name == line):
-                items.append(item.short(1))
+                count = 1
+                bag_evaluation += count * item.evaluation
+                items.append(item.short(count=count))
 
     user.bag.items = items
     user.bag.last_update = datetime.now()
     await mongo.save(user)
     kb = types.InlineKeyboardMarkup()
     kb.insert(types.InlineKeyboardButton(text="⚒Крафт", callback_data=f"find_tiers"))
-    await message.answer("Рюкзак был обновлён", reply_markup=kb)
+    await message.answer(
+        f"Рюкзак был обновлён\nОценка инвентаря: {ceil(bag_evaluation)}🦄",
+        reply_markup=kb,
+    )

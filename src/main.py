@@ -1,4 +1,5 @@
-import random
+from contextlib import suppress
+from typing import List
 
 from aiogram import executor, types
 from aiogram.contrib.middlewares import logging
@@ -6,12 +7,17 @@ from aiogram.dispatcher.webhook import configure_app
 from aiohttp import web
 from aiohttp.web_app import Application
 from aiohttp.web_request import Request
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from loguru import logger
 
 import addons
 from config import allowed_updates, cfg
 from support.bots import bot, dp
+from support.dbmanager.FastMongo import odmantic_mongo
 from support.middlewares import ThrottlingMiddleware, UserMiddleware
+from support.models.blueprint_model import BlueprintType, TierType
+from support.models.items_model import EmbeddedItemType, ItemType
+from support.models.user_model import UserType
 
 logging_middleware = logging.LoggingMiddleware()
 logging_middleware.logger = logger
@@ -37,6 +43,53 @@ async def any_callback(call: types.CallbackQuery):
     await call.answer("🛑🛑🛑", show_alert=True)
 
 
+async def evaluation_update():
+    mongo = odmantic_mongo.get_engine()
+    users = mongo.find(UserType, UserType.bag.items != [])
+    all_items: List[EmbeddedItemType] = []
+    async for user in users:
+        for item in user.bag.items:
+            item: EmbeddedItemType
+            for item_ in all_items:
+                if item.item_id == item_.item_id:
+                    item_.count += item.count
+                    break
+            else:
+                all_items.append(item)
+
+    best_tier = await mongo.find_one(TierType, sort=TierType.tier_id.desc())
+    crafts_in_tier = await mongo.find(BlueprintType, BlueprintType.tier == best_tier.id)
+    if len(crafts_in_tier) > 8:
+        best_tier = await mongo.find_one(
+            TierType,
+            TierType.tier_id == best_tier.tier_id - 1,
+        )
+        crafts_in_tier = await mongo.find(
+            BlueprintType,
+            BlueprintType.tier == best_tier.id,
+        )
+    items_in_craft: List[EmbeddedItemType] = []
+    for craft in crafts_in_tier:
+        for item in craft.items:
+            for item_ in items_in_craft:
+                if item.item_id == item_.item_id:
+                    item_.count += item.count
+                    break
+            else:
+                items_in_craft.append(item)
+
+    items = []
+    for item in all_items:
+        for needed_item in items_in_craft:
+            if needed_item.item_id == item.item_id:
+                item_obj = await mongo.find_one(ItemType, ItemType.id == item.item_id)
+                item_obj.evaluation = needed_item.count / item.count
+                items.append(item_obj)
+                break
+
+    await mongo.save_all(items)
+
+
 async def on_startup(app: Application):
     logger.info("Получаю информацию о боте...")
     botinfo = await bot.me
@@ -51,10 +104,17 @@ async def on_startup(app: Application):
     scope = types.BotCommandScopeAllPrivateChats()
     commands = [
         types.BotCommand(command="start", description="Начать работу с ботом"),
-        types.BotCommand(command="help", description="Начать работу с ботом"),
         types.BotCommand(command="clear", description="Очистить инвентарь"),
     ]
     await bot.set_my_commands(commands=commands, scope=scope)
+
+    with suppress(Exception):
+        await evaluation_update()
+
+    scheduler = AsyncIOScheduler(timezone=cfg.TZ)
+    scheduler.add_job(evaluation_update, "interval", hours=1)
+    scheduler.start()
+
     logger.warning("Бот {} [@{}] запущен", botinfo.full_name, botinfo.username)
 
 

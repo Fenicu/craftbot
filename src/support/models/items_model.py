@@ -20,6 +20,7 @@ class EmbeddedItemType(EmbeddedModel):
 class ItemType(Model):
     item_id: int
     name: str
+    evaluation: float = Field(default=0.0)
     created_at: datetime = Field(default_factory=datetime.now)
 
     class Config:

@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     redis_db_bot: int = 1
 
     global_delay: int = 0.5
+    TZ: str = "Europe/Moscow"
 
     def __init__(self, *args, **kwargs):
         super(Settings, self).__init__(*args, **kwargs)
