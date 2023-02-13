@@ -1,6 +1,6 @@
 from contextlib import suppress
 from typing import List
-
+from datetime import datetime, timedelta
 from aiogram import executor, types
 from aiogram.contrib.middlewares import logging
 from aiogram.dispatcher.webhook import configure_app
@@ -45,9 +45,11 @@ async def any_callback(call: types.CallbackQuery):
 
 async def evaluation_update():
     mongo = odmantic_mongo.get_engine()
+    date = datetime.now() - timedelta(weeks=4)
     users = mongo.find(
         UserType,
         UserType.bag.items != [],
+        UserType.bag.last_update >= date,
         sort=UserType.bag.last_update.desc(),
     )
     all_items: List[EmbeddedItemType] = []
