@@ -45,7 +45,11 @@ async def any_callback(call: types.CallbackQuery):
 
 async def evaluation_update():
     mongo = odmantic_mongo.get_engine()
-    users = mongo.find(UserType, UserType.bag.items != [])
+    users = mongo.find(
+        UserType,
+        UserType.bag.items != [],
+        sort=UserType.bag.last_update.desc(),
+    )
     all_items: List[EmbeddedItemType] = []
     async for user in users:
         for item in user.bag.items:
@@ -83,11 +87,19 @@ async def evaluation_update():
         for needed_item in items_in_craft:
             if needed_item.item_id == item.item_id:
                 item_obj = await mongo.find_one(ItemType, ItemType.id == item.item_id)
+                old_evaluation = item_obj.evaluation
                 item_obj.evaluation = needed_item.count / item.count
-                items.append(item_obj)
+                if old_evaluation != item_obj.evaluation:
+                    items.append(item_obj)
+                    logger.trace(
+                        "Обновлена цена для {}: {} -> {}",
+                        item_obj.name,
+                        old_evaluation,
+                        item_obj.evaluation,
+                    )
                 break
-
-    await mongo.save_all(items)
+    if items:
+        await mongo.save_all(items)
 
 
 async def on_startup(app: Application):

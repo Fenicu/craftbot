@@ -31,4 +31,4 @@ class ItemType(Model):
         return EmbeddedItemType(item_id=self.id, count=count)
 
     def __str__(self) -> str:
-        return f"item_id: {self.item_id} | item_name: {self.name}"
+        return f"item_id: {self.item_id} | item_name: {self.name} | evaluation: {self.evaluation}"
