@@ -4,6 +4,7 @@ from math import ceil
 from typing import List
 
 from aiogram import types
+from loguru import logger
 from odmantic.engine import AIOEngine
 
 from support.bots import dp
@@ -35,6 +36,7 @@ async def starting(message: types.Message, user: UserType, mongo: AIOEngine):
         buttons.append("🖥 Админ Панель")
     kb.add(*buttons)
     user.bag = BagType()
+    logger.debug("{}({}) очистил рюкзак", user.name, user.telegram_id)
     await mongo.save(user)
     out = "Инвентарь был очищен"
     await message.answer(out, reply_markup=kb)
@@ -66,6 +68,7 @@ async def update_bag(message: types.Message, user: UserType, mongo: AIOEngine):
     user.bag.items = items
     user.bag.last_update = datetime.now()
     await mongo.save(user)
+    logger.debug("{}({}) обновил рюкзак", user.name, user.telegram_id)
     kb = types.InlineKeyboardMarkup()
     kb.insert(types.InlineKeyboardButton(text="⚒Крафт", callback_data=f"find_tiers"))
     await message.answer(

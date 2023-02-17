@@ -1,6 +1,7 @@
 from contextlib import suppress
-from typing import List
 from datetime import datetime, timedelta
+from typing import List
+
 from aiogram import executor, types
 from aiogram.contrib.middlewares import logging
 from aiogram.dispatcher.webhook import configure_app

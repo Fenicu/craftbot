@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 
 from aiogram import md, types
+from loguru import logger
 from odmantic import AIOEngine
 
 from support.bots import dp
@@ -39,7 +40,7 @@ async def workshop_info(message: types.Message, mongo: AIOEngine):
 
 
 @dp.message_handler(regexp="Что можешь создать", is_forwarded=True)
-async def create_workshop(message: types.Message, mongo: AIOEngine):
+async def create_workshop(message: types.Message, mongo: AIOEngine, user: UserType):
     pattern = re.compile(
         r"(?P<item_info>.*)\n/craft_(?P<item_slot>right|left|head|legs|chest|torso|book|ring)(?P<item_tier>\d+)",
         re.MULTILINE,
@@ -73,7 +74,6 @@ async def create_workshop(message: types.Message, mongo: AIOEngine):
     ws = await mongo.find_one(
         WorkShopModel, WorkShopModel.owner == message.from_user.id
     )
-    print(blueprints)
     if not ws:
         ws = WorkShopModel(
             owner=message.from_user.id,
@@ -88,4 +88,5 @@ async def create_workshop(message: types.Message, mongo: AIOEngine):
         ws.last_update = datetime.now()
 
     await mongo.save(ws)
+    logger.debug("{}({}) обновил лавку", user.name, user.telegram_id)
     await message.answer("Лавка обновлена!")
