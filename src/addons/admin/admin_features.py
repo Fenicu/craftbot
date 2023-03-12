@@ -26,6 +26,6 @@ async def get_all_items(message: types.Message, mongo: AIOEngine):
     out = f"Количество предметов на руках у {count} игроков:\n"
     for item in all_items:
         item_obj = await mongo.find_one(ItemType, ItemType.id == item.item_id)
-        out += f"{md.hbold(item_obj.name)}: {item.count}\n"
+        out += f"{md.hbold(item_obj.name)}: {item.count} ({round(item_obj.evaluation, 3)} 🦄)\n"
 
     await message.answer(out)
