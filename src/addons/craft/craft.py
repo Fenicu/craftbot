@@ -5,13 +5,13 @@ from typing import List
 
 from aiogram import md, types
 from aioredis import Redis
+from loguru import logger
 from odmantic import AIOEngine
 from odmantic.bson import ObjectId
 
 from support.bots import dp
 from support.models import UserType
-from support.models.blueprint_model import (ICON_MAPPING, BlueprintType,
-                                            TierType)
+from support.models.blueprint_model import ICON_MAPPING, BlueprintType, TierType
 from support.models.craft_model import CraftFilters, CraftType
 
 
@@ -67,9 +67,7 @@ async def mass_craft_info(message: types.Message, mongo: AIOEngine):
 
 
 @dp.message_handler(commands="craft")
-async def show_share_craft(
-    message: types.Message, user: UserType, mongo: AIOEngine, redis: Redis
-):
+async def show_share_craft(message: types.Message, user: UserType, mongo: AIOEngine, redis: Redis):
     mass_craft = message.get_args()
     last_tier = None
     blueprints: List[BlueprintType] = []
@@ -81,16 +79,13 @@ async def show_share_craft(
         if not last_tier:
             continue
         if craft_info.lower() == "all":
-            blueprint = await mongo.find(
-                BlueprintType, BlueprintType.tier == last_tier.id
-            )
+            blueprint = await mongo.find(BlueprintType, BlueprintType.tier == last_tier.id)
             if blueprint:
                 blueprints.extend(blueprint)
         else:
             blueprint = await mongo.find_one(
                 BlueprintType,
-                (BlueprintType.slot == craft_info.lower())
-                & (BlueprintType.tier == last_tier.id),
+                (BlueprintType.slot == craft_info.lower()) & (BlueprintType.tier == last_tier.id),
             )
             if blueprint:
                 blueprints.append(blueprint)
@@ -98,6 +93,7 @@ async def show_share_craft(
         await message.answer("Рецепты не найдены")
         return
 
+    logger.debug("Массовый крафт рецептов: {}", mass_craft)
     craft = CraftType(bag=user.bag, blueprint=blueprints, user=user)
     craft_id = await craft.save_craft(redis)
     text, kb = await craft.craft_text(mongo=mongo, craft_id=craft_id)
@@ -171,9 +167,7 @@ async def find_tier(call: types.CallbackQuery, regexp: re.Match, mongo: AIOEngin
     for blueprint in blueprints:
         name = f"{ICON_MAPPING[blueprint.slot]} {blueprint.slot}"
         buttons.append(
-            types.InlineKeyboardButton(
-                text=name, callback_data=f"showbp:{blueprint.id}"
-            )
+            types.InlineKeyboardButton(text=name, callback_data=f"showbp:{blueprint.id}")
         )
     kb.add(*buttons)
     kb.row_width = 1
@@ -213,14 +207,10 @@ async def load_blueprint(
         text, kb = await craft.craft_text(mongo=mongo, user=user, craft_id=craft_id)
 
     elif craft_filter == CraftFilters.RAW:
-        text, kb = await craft.craft_text(
-            mongo=mongo, user=user, craft_id=craft_id, raw=True
-        )
+        text, kb = await craft.craft_text(mongo=mongo, user=user, craft_id=craft_id, raw=True)
 
     elif craft_filter == CraftFilters.RECIPE:
-        text, kb = await craft.craft_text(
-            mongo=mongo, user=user, craft_id=craft_id, recipe=True
-        )
+        text, kb = await craft.craft_text(mongo=mongo, user=user, craft_id=craft_id, recipe=True)
 
     else:
         await call.answer("Что-то пошло не по плану", show_alert=True)
@@ -250,6 +240,7 @@ async def show_blueprint(
         await call.answer("Такой рецепт не найден", show_alert=True)
         return
 
+    logger.debug("Крафт рецепта: {}", str(blueprint))
     craft = CraftType(bag=user.bag, blueprint=blueprint, user=user)
     craft_id = await craft.save_craft(redis)
     text, kb = await craft.craft_text(mongo=mongo, craft_id=craft_id)
@@ -262,9 +253,7 @@ async def show_blueprint(
 
 
 @dp.message_handler(commands="share")
-async def show_share_craft(
-    message: types.Message, user: UserType, mongo: AIOEngine, redis: Redis
-):
+async def show_share_craft(message: types.Message, user: UserType, mongo: AIOEngine, redis: Redis):
     craft_id = message.get_args()
     craft = CraftType()
     try:

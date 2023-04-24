@@ -119,16 +119,13 @@ class CraftType:
         try:
             self.user = UserType.parse_raw(craft["owner"])
             self.blueprints = [
-                BlueprintType(**bp)
-                for bp in [json.loads(bp_) for bp_ in craft["blueprints"]]
+                BlueprintType(**bp) for bp in [json.loads(bp_) for bp_ in craft["blueprints"]]
             ]
             self.completed_list = [
-                CraftItemModel(**bp)
-                for bp in [json.loads(bp_) for bp_ in craft["completed_list"]]
+                CraftItemModel(**bp) for bp in [json.loads(bp_) for bp_ in craft["completed_list"]]
             ]
             self.needed_items = [
-                EmbeddedItemType(**bp)
-                for bp in [json.loads(bp_) for bp_ in craft["needed_items"]]
+                EmbeddedItemType(**bp) for bp in [json.loads(bp_) for bp_ in craft["needed_items"]]
             ]
             self.not_completed_list = [
                 CraftItemModel(**bp)
@@ -138,9 +135,7 @@ class CraftType:
             logger.exception("Ошибочка")
             raise ValueError
 
-    async def filter_keyboard(
-        self, mongo: AIOEngine, craft_id: str
-    ) -> types.InlineKeyboardMarkup:
+    async def filter_keyboard(self, mongo: AIOEngine, craft_id: str) -> types.InlineKeyboardMarkup:
         """
         Получить клавиатуру с фильтрами
         """
@@ -168,9 +163,7 @@ class CraftType:
             types.InlineKeyboardButton(text="Поделиться", url=url),
         ]
         if len(self.blueprints) == 1:
-            tier = await mongo.find_one(
-                TierType, TierType.id == self.blueprints[0].tier
-            )
+            tier = await mongo.find_one(TierType, TierType.id == self.blueprints[0].tier)
             buttons.append(
                 types.InlineKeyboardButton(
                     text="◀️Назад", callback_data=f"showtier:{tier.tier_id}"
@@ -198,9 +191,7 @@ class CraftType:
                 out += f"{md.hbold(bp.name)}\n"
             out += "\n"
             for item_ in self.not_completed_list:
-                item = await mongo.find_one(
-                    ItemType, ItemType.id == ObjectId(item_.item_id)
-                )
+                item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
                 out += f"{item.name} {item_.needed - item_.available} {md.hcode(f'/buy_{item.item_id}')}\n"
             return out, await self.filter_keyboard(mongo, craft_id)
 
@@ -210,9 +201,7 @@ class CraftType:
 
             out += "\n"
             for item_ in self.needed_items:
-                item = await mongo.find_one(
-                    ItemType, ItemType.id == ObjectId(item_.item_id)
-                )
+                item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
                 out += f"{item.name}: {item_.count}\n"
             return out, await self.filter_keyboard(mongo, craft_id)
 
@@ -223,9 +212,7 @@ class CraftType:
 
             if completed_list:
                 for item_ in self.completed_list:
-                    item = await mongo.find_one(
-                        ItemType, ItemType.id == ObjectId(item_.item_id)
-                    )
+                    item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
                     if item_.available > item_.needed:
                         out += f"{COMPLETED}{item.name} {item_.available}/{item_.needed} ({item_.available - item_.needed}{ITEM})\n"
                     else:
@@ -234,17 +221,13 @@ class CraftType:
 
             if not_completed_list:
                 for item_ in self.not_completed_list:
-                    item = await mongo.find_one(
-                        ItemType, ItemType.id == ObjectId(item_.item_id)
-                    )
+                    item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
                     out += f"{NOT_COMPLETED}{item.name} {item_.available}/{item_.needed}{ITEM} ({item_.needed - item_.available}{ITEM})\n"
                 out += "\n"
 
             craft_evaluation = 0
             for item_ in self.needed_items:
-                item = await mongo.find_one(
-                    ItemType, ItemType.id == ObjectId(item_.item_id)
-                )
+                item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
                 craft_evaluation += item_.count * item.evaluation
             out += f"Оценка крафта: {ceil(craft_evaluation)}🦄\n"
 

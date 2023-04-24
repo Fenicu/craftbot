@@ -5,33 +5,8 @@ from odmantic import AIOEngine
 
 from support.bots import dp
 from support.models import UserType
-from support.models.blueprint_model import (SLOT_MAPPING, BlueprintType,
-                                            TierType)
+from support.models.blueprint_model import SLOT_MAPPING, BlueprintType, TierType
 from support.models.items_model import ItemType
-
-
-@dp.message_handler(text="🖥 Админ Панель", global_admin=True)
-@dp.message_handler(
-    commands="cancel",
-    global_admin=True,
-    regexp_fsm=r"add_item|add_blueprint|add_tier|add_tier_description",
-)
-async def show_panel(message: types.Message, user: UserType, mongo: AIOEngine):
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    kb.add(
-        *[
-            "Добавить рецепт",
-            "Добавить предмет",
-            "Добавить тир",
-            "Все ресурсы",
-            "◀️Назад",
-        ]
-    )
-    out = "Добро пожаловать в админку"
-    user.fsm = ""
-    user.fsm_addons = ""
-    await mongo.save(user)
-    await message.answer(out, reply_markup=kb)
 
 
 @dp.message_handler(text="Добавить предмет", global_admin=True)
@@ -69,9 +44,7 @@ async def create_item(message: types.Message, mongo: AIOEngine):
             "Неверно введена информация о предмете, попробуй ещё раз или нажми /cancel"
         )
         return
-    item = ItemType(
-        item_id=int(item_info.group("item_id")), name=item_info.group("item_name")
-    )
+    item = ItemType(item_id=int(item_info.group("item_id")), name=item_info.group("item_name"))
     await mongo.save(item)
     await message.answer("Предмет успешно добавлен, добавь ещё или нажми /cancel")
 
@@ -95,9 +68,7 @@ async def create_tier(message: types.Message, user: UserType, mongo: AIOEngine):
 
 
 @dp.message_handler(my_state="add_tier_description", global_admin=True)
-async def create_tier_description(
-    message: types.Message, user: UserType, mongo: AIOEngine
-):
+async def create_tier_description(message: types.Message, user: UserType, mongo: AIOEngine):
     tier = TierType(
         tier_id=user.fsm_addons["tier_id"],
         icon=user.fsm_addons["tier_icon"],
@@ -125,11 +96,11 @@ async def create_blueprint(message: types.Message, user: UserType, mongo: AIOEng
             slot = SLOT_MAPPING[slot_]
             break
     blueprint_items = pattern_items.findall(text)
-    blueprint = await mongo.find_one(
-        BlueprintType, BlueprintType.name == blueprint_name
-    )
+    blueprint = await mongo.find_one(BlueprintType, BlueprintType.name == blueprint_name)
     if not blueprint:
         blueprint = BlueprintType(name=blueprint_name, slot=slot)
+    else:
+        blueprint.items = []
     for items in blueprint_items:
         if item := await mongo.find_one(ItemType, ItemType.name == items[1]):
             blueprint.items.append(item.short(int(items[3])))
@@ -148,9 +119,7 @@ async def create_blueprint(message: types.Message, user: UserType, mongo: AIOEng
     try:
         tier = int(message.text)
         if tier := await mongo.find_one(TierType, TierType.tier_id == tier):
-            blueprint = await mongo.find_one(
-                BlueprintType, BlueprintType.id == user.fsm_addons
-            )
+            blueprint = await mongo.find_one(BlueprintType, BlueprintType.id == user.fsm_addons)
             blueprint.tier = tier.id
             user.fsm_addons = ""
             user.fsm = "add_blueprint"

@@ -59,10 +59,7 @@ class Settings(BaseSettings):
             )
 
         if self.logging_file:
-            format_ = (
-                "{time:DD.MM.YY H:mm:ss} "
-                + " {level} {file}:{function}:{line} {message}"
-            )
+            format_ = "{time:DD.MM.YY H:mm:ss} " + " {level} {file}:{function}:{line} {message}"
             logger.add(
                 "logs/bot.log",
                 rotation=self.logging_rotation,
