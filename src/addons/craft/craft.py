@@ -4,6 +4,7 @@ from random import randint, random, shuffle
 from typing import List
 
 from aiogram import md, types
+from aiogram.utils.exceptions import MessageIsTooLong
 from aioredis import Redis
 from loguru import logger
 from odmantic import AIOEngine
@@ -36,7 +37,7 @@ async def mass_craft_info(message: types.Message, mongo: AIOEngine):
 
         for bp in blueprints:
             tier_text += f"{bp.slot} "
-            if random() <= 0.25:
+            if random() <= 0.15:
                 tier_text += f"{bp.slot} "
 
         tier_texts.append(tier_text[:-1])
@@ -97,7 +98,11 @@ async def show_share_craft(message: types.Message, user: UserType, mongo: AIOEng
     craft = CraftType(bag=user.bag, blueprint=blueprints, user=user)
     craft_id = await craft.save_craft(redis)
     text, kb = await craft.craft_text(mongo=mongo, craft_id=craft_id)
-    await message.answer(text, reply_markup=kb)
+    try:
+        await message.answer(text, reply_markup=kb)
+    except MessageIsTooLong:
+        await redis.delete(craft_id)
+        await message.answer("Слишком много рецептов")
 
 
 @dp.message_handler(text="⚒Крафт")
