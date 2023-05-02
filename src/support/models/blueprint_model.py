@@ -68,4 +68,4 @@ class BlueprintType(Model):
         json_loads = json.loads
 
     def __str__(self) -> str:
-        return f"name: {self.name} | tier: {self.tier}"
+        return f"name: {self.name}"

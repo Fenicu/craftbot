@@ -1,4 +1,5 @@
 import re
+from contextlib import suppress
 from datetime import datetime, timedelta
 from random import randint, random, shuffle
 from typing import List
@@ -14,6 +15,7 @@ from support.bots import dp
 from support.models import UserType
 from support.models.blueprint_model import ICON_MAPPING, BlueprintType, TierType
 from support.models.craft_model import CraftFilters, CraftType
+from support.models.workshop_model import WorkShopModel
 
 
 @dp.message_handler(text="🗜Масс крафт")
@@ -221,13 +223,9 @@ async def load_blueprint(
         await call.answer("Что-то пошло не по плану", show_alert=True)
         return
 
-    try:
+    with suppress(Exception):
         await call.message.edit_text(text, reply_markup=kb)
-    except Exception:
-        pass
-
-    finally:
-        await call.answer()
+    await call.answer()
 
 
 @dp.callback_query_handler(regexp=r"showbp:(?P<blueprint_id>.*)")
@@ -245,16 +243,29 @@ async def show_blueprint(
         await call.answer("Такой рецепт не найден", show_alert=True)
         return
 
+    crafters_ = await mongo.find(WorkShopModel, WorkShopModel.active == True)
+    crafters: List[WorkShopModel] = []
+    for crafter in crafters_:
+        for bp in crafter.blueprints:
+            if bp.blueprint_id == blueprint.id:
+                crafters.append(crafter)
+                break
+
     logger.debug("Крафт рецепта: {}", str(blueprint))
     craft = CraftType(bag=user.bag, blueprint=blueprint, user=user)
     craft_id = await craft.save_craft(redis)
     text, kb = await craft.craft_text(mongo=mongo, craft_id=craft_id)
-    try:
+    text += "\nКрафтеры, которые могут скрафтить:\n"
+    for crafter in crafters:
+        owner = await mongo.find_one(UserType, UserType.telegram_id == crafter.owner)
+        text += md.hlink(
+            owner.name,
+            f"https://t.me/share/url?url=/order_{crafter.owner}",
+        )
+        text += "\n"
+    with suppress(Exception):
         await call.message.edit_text(text, reply_markup=kb)
-    except Exception:
-        pass
-    finally:
-        await call.answer()
+    await call.answer()
 
 
 @dp.message_handler(commands="share")
