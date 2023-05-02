@@ -16,6 +16,7 @@ from support.models.bag_model import BagType
 from support.models.blueprint_model import BlueprintType, TierType
 from support.models.items_model import EmbeddedItemType, ItemType
 from support.models.user_model import UserType
+from support.models.workshop_model import WorkShopModel
 
 COMPLETED = "✅"
 NOT_COMPLETED = "❌"
@@ -233,4 +234,21 @@ class CraftType:
 
             summary = sum([item.count for item in self.needed_items])
             out += f"Предметов: {summary}{ITEM}\n"
+            if len(self.blueprints) == 1:
+                blueprint = self.blueprints[0]
+                crafters_ = await mongo.find(WorkShopModel, WorkShopModel.active == True)
+                crafters: List[WorkShopModel] = []
+                for crafter in crafters_:
+                    for bp in crafter.blueprints:
+                        if bp.blueprint_id == blueprint.id:
+                            crafters.append(crafter)
+                            break
+                out += "\nКрафтеры, которые могут скрафтить:\n"
+                for crafter in crafters:
+                    owner = await mongo.find_one(UserType, UserType.telegram_id == crafter.owner)
+                    out += md.hlink(
+                        owner.name,
+                        f"https://t.me/share/url?url=/order_{crafter.owner}",
+                    )
+                    out += "\n"
             return out, await self.filter_keyboard(mongo, craft_id)

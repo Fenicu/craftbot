@@ -243,26 +243,10 @@ async def show_blueprint(
         await call.answer("Такой рецепт не найден", show_alert=True)
         return
 
-    crafters_ = await mongo.find(WorkShopModel, WorkShopModel.active == True)
-    crafters: List[WorkShopModel] = []
-    for crafter in crafters_:
-        for bp in crafter.blueprints:
-            if bp.blueprint_id == blueprint.id:
-                crafters.append(crafter)
-                break
-
     logger.debug("Крафт рецепта: {}", str(blueprint))
     craft = CraftType(bag=user.bag, blueprint=blueprint, user=user)
     craft_id = await craft.save_craft(redis)
     text, kb = await craft.craft_text(mongo=mongo, craft_id=craft_id)
-    text += "\nКрафтеры, которые могут скрафтить:\n"
-    for crafter in crafters:
-        owner = await mongo.find_one(UserType, UserType.telegram_id == crafter.owner)
-        text += md.hlink(
-            owner.name,
-            f"https://t.me/share/url?url=/order_{crafter.owner}",
-        )
-        text += "\n"
     with suppress(Exception):
         await call.message.edit_text(text, reply_markup=kb)
     await call.answer()
