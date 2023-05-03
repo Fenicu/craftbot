@@ -243,12 +243,21 @@ class CraftType:
                         if bp.blueprint_id == blueprint.id:
                             crafters.append(crafter)
                             break
-                out += "\nКрафтеры, которые могут скрафтить:\n"
-                for crafter in crafters:
-                    owner = await mongo.find_one(UserType, UserType.telegram_id == crafter.owner)
-                    out += md.hlink(
-                        owner.name,
-                        f"https://t.me/share/url?url=/order_{crafter.owner}",
-                    )
-                    out += "\n"
+                if len(crafters) > 0:
+                    out += "\nКрафтеры, которые могут скрафтить:\n"
+                    for crafter in crafters:
+                        owner = await mongo.find_one(
+                            UserType,
+                            UserType.telegram_id == crafter.owner,
+                        )
+                        bp_level = 0
+                        for bp in crafter.blueprints:
+                            if bp.blueprint_id == blueprint.id:
+                                bp_level = bp.level
+                                break
+                        out += md.hlink(
+                            owner.name + f" (⚪️{bp_level}-го ур.)",
+                            f"https://t.me/share/url?url=/order_{crafter.owner}",
+                        )
+                        out += "\n"
             return out, await self.filter_keyboard(mongo, craft_id)
