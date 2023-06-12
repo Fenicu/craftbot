@@ -248,8 +248,6 @@ class CraftType:
                         else:
                             collections_items[coll_id] = item_info
 
-            logger.debug(collections_items)
-
             if len(collections_items) > 0:
                 out += "Предметы для крафта сетов:\n"
                 for coll_id, items_info in collections_items.items():
