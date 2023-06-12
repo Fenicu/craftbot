@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from bson import ObjectId
 from odmantic import Field, Model
@@ -61,6 +61,7 @@ class BlueprintType(Model):
     tier: Optional[ObjectId] = None
     slot: SlotType
     items: List[EmbeddedItemType] = []
+    collections: List[Dict[str, Dict[str, int]]] = []
     created_at: datetime = Field(default_factory=datetime.now)
 
     class Config:

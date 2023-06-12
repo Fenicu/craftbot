@@ -14,6 +14,7 @@ from pydantic.main import BaseModel
 
 from support.models.bag_model import BagType
 from support.models.blueprint_model import BlueprintType, TierType
+from support.models.collections_model import CollectionType
 from support.models.items_model import EmbeddedItemType, ItemType
 from support.models.user_model import UserType
 from support.models.workshop_model import WorkShopModel
@@ -103,6 +104,7 @@ class CraftType:
             "completed_list": [item.json() for item in self.completed_list],
             "needed_items": [item.json() for item in self.needed_items],
             "not_completed_list": [item.json() for item in self.not_completed_list],
+            "bag_items": [item.json() for item in self.bag.items],
         }
         await redis.set(addr, json.dumps(data), ex=timedelta(weeks=1))
         return craft_id
@@ -132,6 +134,7 @@ class CraftType:
                 CraftItemModel(**bp)
                 for bp in [json.loads(bp_) for bp_ in craft["not_completed_list"]]
             ]
+            self.bag = BagType(items=[json.loads(item) for item in craft["bag_items"]])
         except Exception:
             logger.exception("Ошибочка")
             raise ValueError
@@ -230,6 +233,42 @@ class CraftType:
             for item_ in self.needed_items:
                 item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
                 craft_evaluation += item_.count * item.evaluation
+
+            collections_items = {}
+            for bp in self.blueprints:
+                for coll in bp.collections:
+                    for coll_id, item_info in coll.items():
+                        if coll_id in collections_items:
+                            item_id = list(item_info.keys())[0]
+                            item_count = list(item_info.values())[0]
+                            if item_id in collections_items[coll_id]:
+                                collections_items[coll_id][item_id] += item_count
+                            else:
+                                collections_items[coll_id][item_id] = item_count
+                        else:
+                            collections_items[coll_id] = item_info
+
+            logger.debug(collections_items)
+
+            if len(collections_items) > 0:
+                out += "Предметы для крафта сетов:\n"
+                for coll_id, items_info in collections_items.items():
+                    collection = await mongo.find_one(
+                        CollectionType, CollectionType.id == ObjectId(coll_id)
+                    )
+                    out += f"{collection.icon}{collection.name}:\n"
+                    for item_id, item_count in items_info.items():
+                        item_collection = await mongo.find_one(
+                            ItemType, ItemType.item_id == int(item_id)
+                        )
+                        item_in_bag_collection = 0
+                        for item_in_bag in self.bag.items:
+                            if item_in_bag.item_id == item_collection.id:
+                                item_in_bag_collection = item_in_bag.count
+                                break
+                        out += f"{COMPLETED if item_in_bag_collection >= item_count else NOT_COMPLETED}{item_collection.name} {item_in_bag_collection}/{item_count}\n"
+                out += "\n\n"
+
             out += f"Оценка крафта: {ceil(craft_evaluation)}🦄\n"
 
             summary = sum([item.count for item in self.needed_items])
