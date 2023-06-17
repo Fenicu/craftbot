@@ -1,6 +1,7 @@
 import re
 
 from aiogram import md, types
+from loguru import logger
 from odmantic import AIOEngine
 
 from support.bots import dp
@@ -8,7 +9,6 @@ from support.models import UserType
 from support.models.blueprint_model import SLOT_MAPPING, BlueprintType, TierType
 from support.models.collections_model import CollectionType
 from support.models.items_model import ItemType
-from loguru import logger
 
 
 @dp.message_handler(text="Добавить сет", global_admin=True)

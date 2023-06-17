@@ -3,6 +3,7 @@ version: "3.7"
 services:
   craftbot:
     build: .
+    restart: always
     container_name: "craftbot"
     environment:
       TZ: Europe/Moscow
