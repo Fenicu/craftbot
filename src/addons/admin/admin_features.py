@@ -1,22 +1,26 @@
+import json
 from typing import List
 
 from aiogram import md, types
+from aioredis import Redis
 from odmantic import AIOEngine
 
 from support.bots import dp
 from support.models import UserType
 from support.models.blueprint_model import BlueprintType, TierType
+from support.models.collections_model import CollectionType
 from support.models.items_model import EmbeddedItemType, ItemType
 
 
 @dp.message_handler(text="🖥 Админ Панель", global_admin=True)
 async def show_panel(message: types.Message, user: UserType, mongo: AIOEngine):
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     kb.add(
         *[
             "🆕Добавление",
             "🔤Редактирование",
             "Все ресурсы",
+            "⚒Последние крафты",
             "◀️Назад",
         ]
     )
@@ -25,12 +29,14 @@ async def show_panel(message: types.Message, user: UserType, mongo: AIOEngine):
     items_count = await mongo.count(ItemType)
     tier_count = await mongo.count(TierType)
     bp_count = await mongo.count(BlueprintType)
+    collect_count = await mongo.count(CollectionType)
     out = "Добро пожаловать в админку!\n\n"
     out += f"В боте {users_count} пользователей, из них {users_bags} обновляли свои рюкзаки\n\n"
     out += f"{md.hbold('Статистика:')}\n"
     out += f"Предметов добавлено: {md.hbold(items_count)}\n"
     out += f"Тиров добавлено: {md.hbold(tier_count)}\n"
     out += f"Рецептов добавлено: {md.hbold(bp_count)}\n"
+    out += f"Сетов добавлено: {md.hbold(collect_count)}\n"
     user.fsm = ""
     user.fsm_addons = ""
     await mongo.save(user)
@@ -81,5 +87,29 @@ async def get_all_items(message: types.Message, mongo: AIOEngine):
     for item in all_items:
         item_obj = await mongo.find_one(ItemType, ItemType.id == item.item_id)
         out += f"{md.hbold(item_obj.name)}: {item.count} ({round(item_obj.evaluation, 3)} 🦄)\n"
+
+    await message.answer(out)
+
+
+@dp.message_handler(text="⚒Последние крафты", global_admin=True)
+async def get_all_items(message: types.Message, redis: Redis):
+    keys = await redis.keys("craft:*")
+    key_ttl = {}
+
+    for key in keys:
+        ttl = await redis.ttl(key)
+        key_ttl[key] = ttl
+
+    sorted_keys = sorted(key_ttl.keys(), key=lambda k: key_ttl[k], reverse=True)
+    sorted_keys = sorted_keys[:20]
+
+    out = f"Последние {len(sorted_keys)} крафтов:\n\n"
+    for key in sorted_keys:
+        craft = await redis.get(key)
+        craft: dict = json.loads(craft)
+
+        craft_id = key.split(":")[1]
+        user = UserType.parse_raw(craft["owner"])
+        out += f"{user.mention}: {md.hcode(f'/share {craft_id}')}\n"
 
     await message.answer(out)
