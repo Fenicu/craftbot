@@ -45,6 +45,30 @@ async def clear_bag(message: types.Message, user: UserType, mongo: AIOEngine):
     await message.answer(out, reply_markup=kb)
 
 
+async def get_diff(
+    old_items: List[EmbeddedItemType],
+    new_items: List[EmbeddedItemType],
+    mongo: AIOEngine,
+) -> str:
+    text = "Изменения в инвентаре:\n\n"
+    for oitem in old_items:
+        item = await mongo.find_one(ItemType, ItemType.id == oitem.item_id)
+        for nitem in new_items:
+            if nitem.item_id == oitem.item_id:
+                break
+        else:
+            text += f"🔴 {item.name} -{oitem.count}\n"
+            continue
+
+        if nitem.count > oitem.count:
+            text += f"🟢 {item.name} +{nitem.count-oitem.count}\n"
+        elif nitem.count < oitem.count:
+            text += f"🔴 {item.name} -{oitem.count-nitem.count}\n"
+        continue
+
+    return text
+
+
 @dp.message_handler(regexp="Сделать заказ /myorders")
 async def update_bag(message: types.Message, user: UserType, mongo: AIOEngine):
     items: List[EmbeddedItemType] = []
@@ -68,14 +92,18 @@ async def update_bag(message: types.Message, user: UserType, mongo: AIOEngine):
                 bag_evaluation += count * item.evaluation
                 items.append(item.short(count=count))
 
+    old_items = user.bag.items.copy()
     user.bag.items = items
+    current_items = user.bag.items.copy()
+    diff_message = await get_diff(old_items, current_items, mongo)
+    diff_date = user.bag.last_update
     user.bag.last_update = datetime.now()
     await mongo.save(user)
     logger.debug("{}({}) обновил рюкзак", user.name, user.telegram_id)
     kb = types.InlineKeyboardMarkup()
     kb.insert(types.InlineKeyboardButton(text="⚒Крафт", callback_data=f"find_tiers"))
     await message.answer(
-        f"Рюкзак был обновлён\nОценка инвентаря: {ceil(bag_evaluation)}🦄",
+        f"Рюкзак был обновлён\nОценка инвентаря: {ceil(bag_evaluation)}🦄\n{diff_message}\nСравнение от {diff_date.strftime('%d.%m.%Y %H:%M')}",
         reply_markup=kb,
     )
 
