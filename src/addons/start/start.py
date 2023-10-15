@@ -64,7 +64,10 @@ async def get_diff(
             text += f"🟢 {item.name} +{nitem.count-oitem.count}\n"
         elif nitem.count < oitem.count:
             text += f"🔴 {item.name} -{oitem.count-nitem.count}\n"
+        new_items.remove(nitem)
         continue
+    for nitem in new_items:
+        text += f"🟢 {item.name} +{nitem.count}\n"
 
     return text
 
