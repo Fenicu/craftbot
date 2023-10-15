@@ -67,6 +67,7 @@ async def get_diff(
         new_items.remove(nitem)
         continue
     for nitem in new_items:
+        item = await mongo.find_one(ItemType, ItemType.id == nitem.item_id)
         text += f"🟢 {item.name} +{nitem.count}\n"
 
     return text
