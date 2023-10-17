@@ -9,14 +9,8 @@ services:
       TZ: Europe/Moscow
       telegram_token: "12345:abcd"
       telegram_admins: '["267519921", "1234567", "666555444"]'
-      webhook_url: https://someurl.com/swcraftbot/updates
-      webhook_path: "/swcraftbot/updates"
-      health_check_path: "/swcraftbot/healthcheck"
-      webhook_port: 8080
       mongo_dsn: mongodb://mongo:27017
       redis_dsn: redis://redis:6379
-    ports:
-      - 8002:8080
 
   mongo:
     image: mongo:4.2
