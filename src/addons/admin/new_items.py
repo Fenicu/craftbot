@@ -121,11 +121,24 @@ async def create_blueprint(message: types.Message, user: UserType, mongo: AIOEng
         if tier := await mongo.find_one(TierType, TierType.tier_id == tier):
             blueprint = await mongo.find_one(BlueprintType, BlueprintType.id == user.fsm_addons)
             blueprint.tier = tier.id
-            user.fsm_addons = ""
-            user.fsm = "add_blueprint"
+            user.fsm = "add_blueprint_level"
             await mongo.save_all([blueprint, user])
-            await message.answer("Чертёж добавлен, добавь ещё или /cancel")
+            await message.answer("Укажи уровень, на котором можно надеть эту шмотку")
         else:
             raise ValueError
     except Exception:
         await message.answer("Тир введён неверно, попробуй ещё раз или /cancel")
+
+
+@dp.message_handler(my_state="add_blueprint_level", global_admin=True)
+async def create_blueprint(message: types.Message, user: UserType, mongo: AIOEngine):
+    try:
+        level = int(message.text)
+        blueprint = await mongo.find_one(BlueprintType, BlueprintType.id == user.fsm_addons)
+        blueprint.level = level
+        user.fsm_addons = ""
+        user.fsm = "add_blueprint"
+        await mongo.save_all([blueprint, user])
+        await message.answer("Чертёж добавлен, добавь ещё или /cancel")
+    except Exception:
+        await message.answer("Уровень введён неверно, попробуй ещё раз или /cancel")

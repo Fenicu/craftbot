@@ -1,7 +1,9 @@
 aiogram==2.20
 aioredis==2.0.1
 apscheduler==3.9.1.post1
+fastapi==0.104.1
 humanize==4.0.0
 loguru==0.6.0
 odmantic==0.4.0
 ujson==5.3.0
+uvicorn==0.24.0.post1

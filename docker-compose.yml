@@ -1,16 +1,29 @@
 version: "3.7"
+x-config: &base-config
+  TZ: Europe/Moscow
+  telegram_token: "12345:abcd"
+  telegram_admins: '["267519921", "1234567", "666555444"]'
+  mongo_dsn: mongodb://mongo:27017
+  redis_dsn: redis://redis:6379
 
 services:
   craftbot:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     container_name: "craftbot"
     environment:
-      TZ: Europe/Moscow
-      telegram_token: "12345:abcd"
-      telegram_admins: '["267519921", "1234567", "666555444"]'
-      mongo_dsn: mongodb://mongo:27017
-      redis_dsn: redis://redis:6379
+      <<: *base-config
+
+  craftbot.API:
+    build:
+      context: .
+      dockerfile: Dockerfile.API
+    restart: always
+    container_name: "craftbot.API"
+    environment:
+      <<: *base-config
 
   mongo:
     image: mongo:4.2

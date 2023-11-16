@@ -47,7 +47,7 @@ async def show_panel(message: types.Message, user: UserType, mongo: AIOEngine):
 @dp.message_handler(
     commands="cancel",
     global_admin=True,
-    regexp_fsm=r"add_item|add_blueprint|add_tier|add_tier_description|add_collection|add_bp_in_collection",
+    regexp_fsm=r"add_item|add_blueprint|add_blueprint_level|add_tier|add_tier_description|add_collection|add_bp_in_collection",
 )
 async def show_panel(message: types.Message, user: UserType, mongo: AIOEngine):
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
