@@ -20,4 +20,4 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY src /app/src
 WORKDIR /app/src
 EXPOSE 8000
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--log-config=log_conf.yaml"]

@@ -4,9 +4,8 @@ import sys
 from odmantic import AIOEngine
 
 sys.path.append("/home/fenicu/craftbot/src")
-from support.models.blueprint_model import BlueprintType, TierType
 from support.dbmanager.FastMongo import FastOdmanticMongo
-
+from support.models.blueprint_model import BlueprintType, TierType
 
 icon_to_level = {
     "🌞": {
