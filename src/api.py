@@ -1,17 +1,15 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import List
 
 import regex
 from fastapi import FastAPI
-from odmantic import AIOEngine
 from pydantic import BaseModel
 
 from support.dbmanager import odmantic_mongo
 from support.models.blueprint_model import BlueprintType, SlotType, TierType
-from support.models.items_model import EmbeddedItemType
 
 engine = odmantic_mongo.get_engine()
-app = FastAPI(title="Fenicu Craft Bot API")
+app = FastAPI(title="Fenicu Craft Bot API", version="0.1.1")
 
 
 class Tier(BaseModel):
