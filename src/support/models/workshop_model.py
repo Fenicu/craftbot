@@ -25,10 +25,12 @@ WORKSHOPTYPE_MAPPING = {
     "⌚️": WorkShopTypes.ENGINEER,
     "💻": WorkShopTypes.ENGINEER,
     "💍": WorkShopTypes.ENGINEER,
+    "🪫": WorkShopTypes.ENGINEER,
     "🕶": WorkShopTypes.WEAVER,
     "👞": WorkShopTypes.WEAVER,
     "👕": WorkShopTypes.WEAVER,
     "👔": WorkShopTypes.WEAVER,
+    "👖": WorkShopTypes.WEAVER,
 }
 
 
