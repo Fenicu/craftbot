@@ -65,6 +65,9 @@ async def mass_craft_info(message: types.Message, mongo: AIOEngine):
         "👔 - <code>torso</code>\n"
         "💻 - <code>book</code>\n"
         "💍 - <code>ring</code>\n"
+        "🪫 - <code>powerbank</code>\n"
+        "👖 - <code>pants</code>\n\n"
+        "📱⌚️🕶👞👕👔💻💍🪫👖 - <code>all</code>"
     )
     await message.answer(out)
 

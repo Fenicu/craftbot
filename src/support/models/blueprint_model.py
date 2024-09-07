@@ -23,6 +23,8 @@ class SlotType(str, Enum):
     TORSO = "torso"
     BOOK = "book"
     RING = "ring"
+    POWERBANK = "powerbank"
+    PANTS = "pants"
 
 
 SLOT_MAPPING = {
@@ -34,6 +36,8 @@ SLOT_MAPPING = {
     "👔": SlotType.TORSO,
     "💻": SlotType.BOOK,
     "💍": SlotType.RING,
+    "🪫": SlotType.POWERBANK,
+    "👖": SlotType.PANTS,
 }
 
 ICON_MAPPING = {
@@ -45,6 +49,8 @@ ICON_MAPPING = {
     SlotType.TORSO: "👔",
     SlotType.BOOK: "💻",
     SlotType.RING: "💍",
+    SlotType.POWERBANK: "🪫",
+    SlotType.PANTS: "👖",
 }
 
 
