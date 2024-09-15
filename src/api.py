@@ -31,8 +31,6 @@ class Blueprint(BaseModel):
     tier: Tier
     slot: SlotType
     level: int
-    # items: List[EmbeddedItemType] = []
-    # collections: List[Dict[str, Dict[str, int]]]
     created_at: datetime
 
 
@@ -75,8 +73,6 @@ async def get_blueprints():
                     "tier": Tier(**{"tier_id": tier.tier_id, "icon": tier.icon}),
                     "slot": bp.slot,
                     "level": bp.level,
-                    # "items": bp.items,
-                    # "collections": bp.collections,
                     "created_at": bp.created_at,
                 }
             )

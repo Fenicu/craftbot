@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 
 from bson import ObjectId
 from odmantic import Field, Model
-from pydantic import BaseModel
 
 from support.models.items_model import EmbeddedItemType
 
@@ -23,7 +22,7 @@ class SlotType(str, Enum):
     TORSO = "torso"
     BOOK = "book"
     RING = "ring"
-    POWERBANK = "powerbank"
+    POWERBANK = "pbank"
     PANTS = "pants"
 
 

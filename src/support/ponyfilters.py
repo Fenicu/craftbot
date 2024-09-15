@@ -1,6 +1,5 @@
 import re
 import typing
-import warnings
 from ast import literal_eval
 from typing import Iterable, List, Optional, Pattern, Union
 
@@ -8,7 +7,6 @@ from aiogram import types
 from aiogram.dispatcher.filters import AdminFilter as OldAdminFilter
 from aiogram.dispatcher.filters import BoundFilter, Filter
 from aiogram.dispatcher.handler import ctx_data
-from aiogram.types.chat_member import ChatMemberAdministrator, ChatMemberOwner
 from loguru import logger
 
 from support import models

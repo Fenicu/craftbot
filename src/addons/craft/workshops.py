@@ -41,7 +41,7 @@ async def workshop_info(message: types.Message, mongo: AIOEngine):
 @dp.message_handler(regexp="Что можешь создать", is_forwarded=True)
 async def create_workshop(message: types.Message, mongo: AIOEngine, user: UserType):
     pattern = re.compile(
-        r"(?P<item_info>.*)\n/craft_(?P<item_slot>right|left|head|legs|chest|torso|book|ring)(?P<item_tier>\d+)",
+        r"(?P<item_info>.*)\n/craft_(?P<item_slot>right|left|pbank|pants|head|legs|chest|torso|book|ring)(?P<item_tier>\d+)",
         re.MULTILINE,
     )
     items = pattern.findall(message.text)
