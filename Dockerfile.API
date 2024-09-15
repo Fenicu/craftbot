@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster as compile-image
+FROM python:3.9-slim-buster AS compile-image
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements.txt .

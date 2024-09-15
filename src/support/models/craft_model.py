@@ -169,9 +169,7 @@ class CraftType:
         if len(self.blueprints) == 1:
             tier = await mongo.find_one(TierType, TierType.id == self.blueprints[0].tier)
             buttons.append(
-                types.InlineKeyboardButton(
-                    text="◀️Назад", callback_data=f"showtier:{tier.tier_id}"
-                )
+                types.InlineKeyboardButton(text="◀️Назад", callback_data=f"showtier:{tier.tier_id}")
             )
         kb.add(*buttons)
         return kb
@@ -273,7 +271,11 @@ class CraftType:
             out += f"Предметов: {summary}{ITEM}\n"
             if len(self.blueprints) == 1:
                 blueprint = self.blueprints[0]
-                crafters_ = await mongo.find(WorkShopModel, WorkShopModel.active == True)
+                crafters_ = await mongo.find(
+                    WorkShopModel,
+                    WorkShopModel.active == True,
+                    sort=WorkShopModel.last_update.desc(),
+                )
                 crafters: List[WorkShopModel] = []
                 for crafter in crafters_:
                     for bp in crafter.blueprints:
@@ -293,7 +295,7 @@ class CraftType:
                                 bp_level = bp.level
                                 break
                         out += md.hlink(
-                            owner.name + f" (⚪️{bp_level}-го ур.)",
+                            owner.name + f" (⚪️{bp_level}-го ур.)" if bp_level > 0 else owner.name,
                             f"https://t.me/share/url?url=/order_{crafter.owner}",
                         )
                         out += "\n"

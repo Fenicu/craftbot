@@ -13,7 +13,7 @@ from odmantic.bson import ObjectId
 
 from support.bots import dp
 from support.models import UserType
-from support.models.blueprint_model import ICON_MAPPING, BlueprintType, TierType
+from support.models.blueprint_model import ICON_MAPPING, SLOT_MAPPING, BlueprintType, TierType
 from support.models.craft_model import CraftFilters, CraftType
 from support.models.workshop_model import WorkShopModel
 
@@ -54,20 +54,15 @@ async def mass_craft_info(message: types.Message, mongo: AIOEngine):
 
     out = "Команда для массового крафта используется так:\n"
     out += "\n\n".join(commands) + "\n\n"
+    items = ""
+    icons = ""
+    for icon, item in SLOT_MAPPING.items():
+        items += f"{icon} - {md.hcode(item.value)}\n"
+        icons += icon
     out += (
         "После команды craft указывается сначала тир, потом предметы из него, чтобы добавить весь тир, напишите all\n"
-        "Справка по вещам:\n"
-        "📱 - <code>right</code>\n"
-        "⌚️ - <code>left</code>\n"
-        "🕶 - <code>head</code>\n"
-        "👞 - <code>legs</code>\n"
-        "👕 - <code>chest</code>\n"
-        "👔 - <code>torso</code>\n"
-        "💻 - <code>book</code>\n"
-        "💍 - <code>ring</code>\n"
-        "🪫 - <code>pbank</code>\n"
-        "👖 - <code>pants</code>\n\n"
-        "📱⌚️🕶👞👕👔💻💍🪫👖 - <code>all</code>"
+        f"Справка по вещам:\n{items}\n\n"
+        f"{icons} - <code>{md.hcode('all')}</code>"
     )
     await message.answer(out)
 

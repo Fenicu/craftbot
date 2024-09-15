@@ -23,20 +23,15 @@ async def add_collection(message: types.Message, user: UserType, mongo: AIOEngin
 @dp.message_handler(text="Добавить крафт в сет", global_admin=True)
 async def add_bp_in_collection(message: types.Message, user: UserType, mongo: AIOEngine):
     user.fsm = "add_bp_in_collection"
+    items = ""
+    for icon, item in SLOT_MAPPING.items():
+        items += f"{icon} - {md.hcode(item.value)}\n"
     await mongo.save(user)
     await message.answer(
         f"Введи {md.hcode('set_icon:tier_id:slot:item_id:item_count')}\nНапример: {md.hcode('🧸:18:right:118:15')}\n\n"
         "Это значит, что мы добавим 📱iBlackM (+57🔨, +29🎓) (18 тир, слот right) в сет 🧸Соня"
         " и для крафта ему надо 15 💽Прошивка\n\n"
-        "Справка по вещам:\n"
-        f"📱 - {md.hcode('right')}\n"
-        f"⌚️ - {md.hcode('left')}\n"
-        f"🕶 - {md.hcode('head')}\n"
-        f"👞 - {md.hcode('legs')}\n"
-        f"👕 - {md.hcode('chest')}\n"
-        f"👔 - {md.hcode('torso')}\n"
-        f"💻 - {md.hcode('book')}\n"
-        f"💍 - {md.hcode('ring')}\n\n"
+        f"Справка по вещам:\n{items}\n\n"
         f"💎 - {md.hcode('117')}\n"
         f"💽 - {md.hcode('118')}\n"
         f"🧶 - {md.hcode('107')}\n"

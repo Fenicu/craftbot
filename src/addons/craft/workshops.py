@@ -17,22 +17,26 @@ async def workshop_info(message: types.Message, mongo: AIOEngine):
     workshops = await mongo.find(
         WorkShopModel,
         WorkShopModel.active == True,
-        sort=(WorkShopModel.type, WorkShopModel.last_update),
+        sort=(WorkShopModel.type, WorkShopModel.last_update.desc()),
     )
     if not workshops:
         await message.answer("Открытых мастерских сейчас нет")
         return
 
-    out = "Список активных 🔨Мастерских:\n"
+    out = "Список активных 🔨Мастерских:"
+    wicon = ""
     for workshop in workshops:
+        if workshop.icon != wicon:
+            out += "\n"
+            wicon = workshop.icon
         tiers = await workshop.get_all_tiers(mongo=mongo)
         owner = await mongo.find_one(UserType, UserType.telegram_id == workshop.owner)
         out += (
             md.hlink(
-                f"{workshop.icon} {owner.name} {', '.join([str(tier) for tier in tiers])}",
+                f"{workshop.icon} {owner.name} {group_numbers(tiers)}",
                 f"https://t.me/share/url?url=/order_{workshop.owner}",
             )
-            + "\n\n"
+            + "\n"
         )
 
     await message.answer(out)
@@ -87,3 +91,26 @@ async def create_workshop(message: types.Message, mongo: AIOEngine, user: UserTy
     await mongo.save(ws)
     logger.debug("{}({}) обновил лавку", user.name, user.telegram_id)
     await message.answer("Лавка обновлена!")
+
+
+def group_numbers(numbers: List[int]) -> str:
+    numbers.sort()
+    current_range = [numbers[0]]
+    result = ""
+
+    for i in range(1, len(numbers)):
+        if numbers[i] - 1 == current_range[-1]:
+            current_range.append(numbers[i])
+        else:
+            if len(current_range) > 1:
+                result += f"{current_range[0]}-{current_range[-1]} "
+            else:
+                result += str(current_range[0]) + " "
+            current_range = [numbers[i]]
+
+    if len(current_range) > 1:
+        result += f"{current_range[0]}-{current_range[-1]}"
+    else:
+        result += str(current_range[0])
+
+    return result
