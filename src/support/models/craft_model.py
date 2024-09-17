@@ -194,7 +194,7 @@ class CraftType:
             out += "\n"
             for item_ in self.not_completed_list:
                 item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
-                out += f"{item.name} {item_.needed - item_.available} {md.hcode(f'/buy_{item.item_id}')} | {md.hcode(f'/sell_{item.item_id}')}\n"
+                out += f"{item.name} {item_.needed - item_.available}\n{md.hcode(f'/buy_{item.item_id}')} | {md.hcode(f'/sell_{item.item_id}')}\n\n"
             return out, await self.filter_keyboard(mongo, craft_id)
 
         elif recipe:
