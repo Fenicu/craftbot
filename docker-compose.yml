@@ -37,7 +37,7 @@ services:
     container_name: craftbot-redis
     restart: always
     volumes:
-        - redis:/data
+      - redis:/data
 
 volumes:
   mongo:
