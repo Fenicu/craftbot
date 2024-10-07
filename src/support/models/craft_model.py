@@ -36,6 +36,7 @@ class CraftFilters(str, Enum):
     NOTCOMPLITED = "notcomplited"
     NOFILTER = "nofilter"
     RAW = "raw"
+    OLDRAW = "oldraw"
     RECIPE = "recipe"
 
 
@@ -159,7 +160,10 @@ class CraftType:
                 callback_data=f"craft:{craft_id}:{CraftFilters.NOFILTER}",
             ),
             types.InlineKeyboardButton(
-                text="Импорт", callback_data=f"craft:{craft_id}:{CraftFilters.RAW}"
+                text="Импорт 📱", callback_data=f"craft:{craft_id}:{CraftFilters.RAW}"
+            ),
+            types.InlineKeyboardButton(
+                text="Импорт 🖥", callback_data=f"craft:{craft_id}:{CraftFilters.OLDRAW}"
             ),
             types.InlineKeyboardButton(
                 text="Рецепт", callback_data=f"craft:{craft_id}:{CraftFilters.RECIPE}"
@@ -182,6 +186,7 @@ class CraftType:
         completed_list: bool = True,
         not_completed_list: bool = True,
         raw: bool = False,
+        old_raw: bool = False,
         recipe=False,
     ) -> Tuple[str, types.InlineKeyboardMarkup]:
         if user and self.user.telegram_id != user.telegram_id:
@@ -194,7 +199,10 @@ class CraftType:
             out += "\n"
             for item_ in self.not_completed_list:
                 item = await mongo.find_one(ItemType, ItemType.id == ObjectId(item_.item_id))
-                out += f"{item.name} {item_.needed - item_.available}\n{md.hcode(f'/buy_{item.item_id}')} | {md.hcode(f'/sell_{item.item_id}')}\n\n"
+                if old_raw:
+                    out += f"{item.name} {item_.needed - item_.available} {md.hcode(f'/buy_{item.item_id}')} | {md.hcode(f'/sell_{item.item_id}')}\n"
+                else:
+                    out += f"{item.name} {item_.needed - item_.available}\n{md.hcode(f'/buy_{item.item_id}')} | {md.hcode(f'/sell_{item.item_id}')}\n\n"
             return out, await self.filter_keyboard(mongo, craft_id)
 
         elif recipe:

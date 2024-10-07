@@ -214,6 +214,9 @@ async def load_blueprint(
     elif craft_filter == CraftFilters.RAW:
         text, kb = await craft.craft_text(mongo=mongo, user=user, craft_id=craft_id, raw=True)
 
+    elif craft_filter == CraftFilters.OLDRAW:
+        text, kb = await craft.craft_text(mongo=mongo, user=user, craft_id=craft_id, raw=True, old_raw=True)
+
     elif craft_filter == CraftFilters.RECIPE:
         text, kb = await craft.craft_text(mongo=mongo, user=user, craft_id=craft_id, recipe=True)
 
