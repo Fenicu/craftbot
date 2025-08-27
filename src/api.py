@@ -59,6 +59,9 @@ def extract_item_data(item_string):
 
 @app.get("/blueprints/", response_model=List[Blueprint])
 async def get_blueprints():
+    """
+    Используйте этот метод, чтобы получить список всех рецептов в игре
+    """
     bps = await engine.find(BlueprintType)
     result = []
     for bp in bps:

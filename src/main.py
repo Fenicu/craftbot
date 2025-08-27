@@ -11,7 +11,7 @@ from aiohttp.web_request import Request
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from loguru import logger
 
-import addons
+import addons  # noqa: F401
 from config import allowed_updates, cfg
 from support.bots import bot, dp
 from support.dbmanager.FastMongo import odmantic_mongo
@@ -120,6 +120,7 @@ async def on_startup(app: Application):
     commands = [
         types.BotCommand(command="start", description="Начать работу с ботом"),
         types.BotCommand(command="clear", description="Очистить инвентарь"),
+        types.BotCommand(command="top", description="Рейтинг по стоимости рюкзака"),
     ]
     await bot.set_my_commands(commands=commands, scope=scope)
 

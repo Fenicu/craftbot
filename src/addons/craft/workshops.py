@@ -16,7 +16,7 @@ from support.models.workshop_model import WORKSHOPTYPE_MAPPING, WorkShopBlueprin
 async def workshop_info(message: types.Message, mongo: AIOEngine):
     workshops = await mongo.find(
         WorkShopModel,
-        WorkShopModel.active == True,
+        WorkShopModel.active == True,  # noqa: E712
         sort=(WorkShopModel.type, WorkShopModel.last_update.desc()),
     )
     if not workshops:
